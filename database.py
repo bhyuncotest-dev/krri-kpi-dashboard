@@ -1,7 +1,18 @@
 import sqlite3
 import os
+import shutil
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'krri_kpi.db')
+# Vercel Serverless 환경 감지 및 /tmp 디렉토리 사용 설정
+if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+    DB_PATH = '/tmp/krri_kpi.db'
+    local_db = os.path.join(os.path.dirname(__file__), 'krri_kpi.db')
+    if not os.path.exists(DB_PATH) and os.path.exists(local_db):
+        try:
+            shutil.copyfile(local_db, DB_PATH)
+        except Exception:
+            pass
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), 'krri_kpi.db')
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
