@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}KRRI R&D 과제 KPI 모니터링{% endblock %}
+{% block page_title %}R&D 철도 연구과제 KPI 모니터링{% endblock %}
+{% block page_subtitle %}한국철도기술연구원 주요 R&D 수주 및 예산 집행, 진척도 관리{% endblock %}
+
+{% block content %}
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">수행 중 주요 R&D 과제 수</div>
+            <div class="val" id="totalProjectCount">5 <span style="font-size:14px; font-weight:normal;">개 과제</span></div>
+            <div class="sub-val"><i class="fa-solid fa-check-double"></i> 100% 정상 진척 중</div>
+        </div>
+        <div class="metric-icon icon-blue">
+            <i class="fa-solid fa-diagram-project"></i>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">총 연구개발 예산 규모</div>
+            <div class="val" id="totalProjectBudget">19,900 <span style="font-size:14px; font-weight:normal;">백만원</span></div>
+            <div class="sub-val"><i class="fa-solid fa-coins"></i> 정부 출연금 및 수탁과제</div>
+        </div>
+        <div class="metric-icon icon-green">
+            <i class="fa-solid fa-won-sign"></i>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">평균 과제 공정 진척률</div>
+            <div class="val" id="avgProjectProgress">92.2 <span style="font-size:14px; font-weight:normal;">%</span></div>
+            <div class="sub-val"><i class="fa-solid fa-arrow-trend-up"></i> 1분기 목표 대비 +2.2%</div>
+        </div>
+        <div class="metric-icon icon-purple">
+            <i class="fa-solid fa-bars-progress"></i>
+        </div>
+    </div>
+</div>
+
+<div class="card-box">
+    <div class="card-box-header">
+        <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> 주요 연구과제 현황 목록</h2>
+        <span class="badge badge-info">2026년도 국가연구개발 사업</span>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>과제 코드</th>
+                    <th>연구 과제명</th>
+                    <th>주관 연구본부</th>
+                    <th>연구책임자</th>
+                    <th>연구예산</th>
+                    <th>공정 진척도</th>
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody id="projectsTableBody">
+                <!-- Loaded dynamically via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProjectsData();
+    });
+</script>
+{% endblock %}

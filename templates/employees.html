@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}KRRI 직원 KPI 상세 관리{% endblock %}
+{% block page_title %}직원별 KPI 상세 관리 및 보직자 평가{% endblock %}
+{% block page_subtitle %}연구원별 정량/정성 목표 달성도 모니터링 및 보직자 평가 점수/피드백 작성{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Header -->
+<div class="card-box" style="margin-bottom: 24px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+        
+        <!-- Filter Tabs -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="deptFilterGroup">
+            <button class="btn btn-primary btn-sm" onclick="filterByDept(null, this)">전체 본부/실</button>
+            <!-- Dynamically populated department buttons -->
+        </div>
+
+        <!-- Search & Action -->
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="position: relative;">
+                <input type="text" id="employeeSearchInput" class="form-control" placeholder="연구원 성명, 사번 검색..." style="width: 220px; padding-left: 36px;" onkeyup="handleEmployeeSearch()">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddEmployeeModal()">
+                <i class="fa-solid fa-user-plus"></i> 신규 연구원 등록
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Cards Grid -->
+<div class="emp-grid" id="employeeGridContainer">
+    <!-- Loaded dynamically via JS -->
+</div>
+
+<!-- Add Employee Modal HTML (Used inside modal script) -->
+<template id="addEmployeeTemplate">
+    <form id="addEmpForm" onsubmit="submitAddEmployee(event)">
+        <div class="form-group">
+            <label>연구원 성명 *</label>
+            <input type="text" name="name" class="form-control" required placeholder="예: 홍길동">
+        </div>
+        <div class="form-group">
+            <label>사번 *</label>
+            <input type="text" name="emp_no" class="form-control" required placeholder="예: KRRI-2099">
+        </div>
+        <div class="form-group">
+            <label>소속 부서 *</label>
+            <select name="dept_id" class="form-control" required id="addDeptSelect">
+                <!-- Populated via JS -->
+            </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+                <label>직급</label>
+                <select name="position" class="form-control">
+                    <option value="수석연구원">수석연구원</option>
+                    <option value="책임연구원" selected>책임연구원</option>
+                    <option value="선임연구원">선임연구원</option>
+                    <option value="연구원">연구원</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>직책</label>
+                <input type="text" name="title" class="form-control" value="선임연구원" placeholder="예: 연구팀장">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>이메일</label>
+            <input type="email" name="email" class="form-control" placeholder="email@krri.re.kr">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="closeKpiModal()">취소</button>
+            <button type="submit" class="btn btn-primary">등록하기</button>
+        </div>
+    </form>
+</template>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadEmployeesData();
+    });
+</script>
+{% endblock %}

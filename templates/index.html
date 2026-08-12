@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}KRRI 보직자 메인 대시보드{% endblock %}
+{% block page_title %}보직자 종합 KPI 대시보드{% endblock %}
+{% block page_subtitle %}한국철도기술연구원 본부별 성과 및 주요 KPI 모니터링{% endblock %}
+
+{% block content %}
+<!-- Metrics Summary Row -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">전체 평균 보직자 평가 점수</div>
+            <div class="val" id="metricAvgScore">90.4 <span style="font-size:16px; font-weight:normal;">점</span></div>
+            <div class="sub-val"><i class="fa-solid fa-arrow-trend-up"></i> 전분기 대비 +2.1% 향상</div>
+        </div>
+        <div class="metric-icon icon-blue">
+            <i class="fa-solid fa-award"></i>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">SCI / KCI 논문 게재</div>
+            <div class="val" id="metricPapers">42 / 41 <span style="font-size:14px; font-weight:normal;">건</span></div>
+            <div class="sub-val"><i class="fa-solid fa-circle-check"></i> 목표 달성률 102.4%</div>
+        </div>
+        <div class="metric-icon icon-green">
+            <i class="fa-solid fa-book-bookmark"></i>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">특허 출원 및 등록</div>
+            <div class="val" id="metricPatents">37 / 33 <span style="font-size:14px; font-weight:normal;">건</span></div>
+            <div class="sub-val"><i class="fa-solid fa-circle-check"></i> 목표 달성률 112.1%</div>
+        </div>
+        <div class="metric-icon icon-orange">
+            <i class="fa-solid fa-lightbulb"></i>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-info">
+            <div class="label">기술이전 계약 실적</div>
+            <div class="val" id="metricTechTransfer">1,410 <span style="font-size:14px; font-weight:normal;">백만원</span></div>
+            <div class="sub-val"><i class="fa-solid fa-circle-check"></i> 목표 달성률 114.6%</div>
+        </div>
+        <div class="metric-icon icon-purple">
+            <i class="fa-solid fa-handshake"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard Grid (Charts) -->
+<div class="dashboard-grid">
+    <!-- Left Chart: Department Performance -->
+    <div class="card-box">
+        <div class="card-box-header">
+            <h2><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> 연구본부별 평균 KPI 달성률 및 평점</h2>
+            <span class="badge badge-info">2026 1분기 기준</span>
+        </div>
+        <div class="chart-container">
+            <canvas id="deptChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Right Chart: Category Distribution -->
+    <div class="card-box">
+        <div class="card-box-header">
+            <h2><i class="fa-solid fa-chart-pie" style="color:var(--accent-cyan);"></i> KPI 가중치별 달성 비중</h2>
+            <span class="badge badge-success">정량지표</span>
+        </div>
+        <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section: Top Performers & Focus Warning List -->
+<div class="dashboard-grid">
+    <!-- Top Performers List -->
+    <div class="card-box">
+        <div class="card-box-header">
+            <h2><i class="fa-solid fa-trophy" style="color:var(--accent-orange);"></i> 2026년 1분기 우수 성과 연구원 Top 5</h2>
+            <a href="/employees" class="btn btn-secondary btn-sm">전체보기 <i class="fa-solid fa-chevron-right"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>연구원</th>
+                        <th>소속 부서</th>
+                        <th>직급/직책</th>
+                        <th>보직자 평가점수</th>
+                        <th>상세</th>
+                    </tr>
+                </thead>
+                <tbody id="topPerformersBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Warning & Coaching Required -->
+    <div class="card-box">
+        <div class="card-box-header">
+            <h2><i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-red);"></i> 관심 및 지연 관리 연구원</h2>
+            <span class="badge badge-warning">보직자 코칭 필요</span>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>연구원</th>
+                        <th>소속</th>
+                        <th>상태</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="warningBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardData();
+    });
+</script>
+{% endblock %}

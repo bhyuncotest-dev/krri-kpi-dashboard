@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KRRI 보직자용 직원 KPI 관리 대시보드{% endblock %}</title>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-badge">
+                <i class="fa-solid fa-train-subway"></i>
+            </div>
+            <div class="logo-text">
+                <span class="title">KRRI KPI</span>
+                <span class="subtitle">한국철도기술연구원</span>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>보직자 대시보드</span>
+            </a>
+            <a href="/employees" class="nav-item {% if request.path == '/employees' %}active{% endif %}">
+                <i class="fa-solid fa-user-group"></i>
+                <span>직원 KPI 상세 관리</span>
+            </a>
+            <a href="/projects" class="nav-item {% if request.path == '/projects' %}active{% endif %}">
+                <i class="fa-solid fa-diagram-project"></i>
+                <span>R&D 과제 KPI 모니터링</span>
+            </a>
+            <a href="/reports" class="nav-item {% if request.path == '/reports' %}active{% endif %}">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>보직자 보고서</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">보직</div>
+                <div class="user-info">
+                    <span class="user-name">김철수 (본부장)</span>
+                    <span class="user-role">철도연구본부 보직자</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="page-title-group">
+                <h1>{% block page_title %}보직자 종합 KPI 모니터링{% endblock %}</h1>
+                <p>{% block page_subtitle %}2026년 1분기 정량/정성 주요 성과 지표 달성 현황{% endblock %}</p>
+            </div>
+            
+            <div class="navbar-actions">
+                <div class="quick-tag">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <span>KRRI 연구성과관리시스템 v2.6</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="location.reload()">
+                    <i class="fa-solid fa-rotate-right"></i> 새로고침
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Body Content -->
+        <main class="content-body">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- Modal Container for Details/Edits -->
+<div id="kpiModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">직원 KPI 평가 및 실적 수정</h2>
+            <button class="modal-close" onclick="closeKpiModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Loaded dynamically via JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Main JavaScript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

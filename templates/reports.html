@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}KRRI 보직자 보고서{% endblock %}
+{% block page_title %}보직자 종합 성과 평가 보고서{% endblock %}
+{% block page_subtitle %}한국철도기술연구원 2026년 1분기 경영성과 및 정량 KPI 최종 보고서{% endblock %}
+
+{% block content %}
+<div class="no-print" style="margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 12px;">
+    <button class="btn btn-primary" onclick="window.print()">
+        <i class="fa-solid fa-print"></i> 보고서 인쇄 / PDF 저장
+    </button>
+</div>
+
+<div class="card-box" style="padding: 40px; background: var(--bg-card); border-radius: 16px;">
+    <!-- Report Header -->
+    <div style="border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <div style="color: var(--accent-cyan); font-weight: 800; font-size: 14px; margin-bottom: 4px;">한국철도기술연구원 (KRRI)</div>
+            <h1 style="font-size: 26px; font-weight: 900; color: white;">2026년 1분기 부서별/직원별 KPI 종합 성과 보고서</h1>
+        </div>
+        <div style="text-align: right; color: var(--text-muted); font-size: 12px;">
+            <p><strong>작성일자:</strong> 2026년 3월 31일</p>
+            <p><strong>보고자:</strong> 철도연구본부장 김철수 (인)</p>
+        </div>
+    </div>
+
+    <!-- Executive Summary Section -->
+    <div style="margin-bottom: 30px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-square-check"></i> 1. 종합 성과 총평 (Executive Summary)
+        </h3>
+        <p style="font-size: 14px; line-height: 1.7; color: var(--text-main); background: rgba(0,0,0,0.2); padding: 16px; border-radius: 10px; border-left: 4px solid var(--primary);">
+            2026년 1분기 KRRI 전 부서 정량 성과 집계 결과, 목표 점수 90.0점 대비 <strong>평균 90.4점(달성률 102.4%)</strong>으로 전반적인 정량 지표 목표를 안정적으로 상회 달성하였습니다.<br>
+            특히 <strong>스마트철도교통연구본부(94.0점)</strong>와 <strong>철도차량연구본부(95.0점)</strong>의 경우 차세대 동력분산식 고속열차 및 자율주행 열차 대형 기술이전 계약 체결로 실적을 크게 견인하였습니다.
+        </p>
+    </div>
+
+    <!-- Table 1: Dept Performance Summary -->
+    <div style="margin-bottom: 30px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 12px;">
+            <i class="fa-solid fa-table"></i> 2. 부서별 평균 성과 및 평가점수 현황
+        </h3>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>부서/연구본부명</th>
+                    <th>부서장</th>
+                    <th>인원 수</th>
+                    <th>목표점수</th>
+                    <th>실제 평가점수</th>
+                    <th>달성률</th>
+                    <th>평가 등급</th>
+                </tr>
+            </thead>
+            <tbody id="reportDeptTable">
+                <!-- Loaded via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table 2: Category Breakdown -->
+    <div style="margin-bottom: 30px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 12px;">
+            <i class="fa-solid fa-list-ol"></i> 3. 5대 핵심 KPI 지표별 집계 요약
+        </h3>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>KPI 지표명</th>
+                    <th>가중치</th>
+                    <th>1분기 목표 총합</th>
+                    <th>1분기 실적 총합</th>
+                    <th>단위</th>
+                    <th>달성 상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>SCI/KCI 논문 게재</strong></td>
+                    <td>25%</td>
+                    <td>41.0</td>
+                    <td>42.0</td>
+                    <td>건</td>
+                    <td><span class="badge badge-success">초과달성 (102.4%)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>국내외 특허 출원 및 등록</strong></td>
+                    <td>20%</td>
+                    <td>33.0</td>
+                    <td>37.0</td>
+                    <td>건</td>
+                    <td><span class="badge badge-success">초과달성 (112.1%)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>기술이전 계약 실적</strong></td>
+                    <td>25%</td>
+                    <td>1,230</td>
+                    <td>1,410</td>
+                    <td>백만원</td>
+                    <td><span class="badge badge-success">초과달성 (114.6%)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>R&D 정부/민간 과제 수주</strong></td>
+                    <td>20%</td>
+                    <td>4,370</td>
+                    <td>4,800</td>
+                    <td>백만원</td>
+                    <td><span class="badge badge-success">초과달성 (109.8%)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>철도 현장 실증 및 시험</strong></td>
+                    <td>10%</td>
+                    <td>18.0</td>
+                    <td>17.0</td>
+                    <td>건</td>
+                    <td><span class="badge badge-warning">보통 (94.4%)</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sign-off box -->
+    <div style="margin-top: 50px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 30px;">
+        <p style="font-size: 14px; font-weight: 700; color: var(--text-muted);">위와 같이 2026년 1분기 한국철도기술연구원 직원 KPI 성과를 보고합니다.</p>
+        <div style="margin-top: 20px; font-size: 18px; font-weight: 900; color: white;">
+            한국철도기술연구원장 귀하
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadReportsData();
+    });
+</script>
+{% endblock %}
