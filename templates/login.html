@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRRI 보직자 시스템 로그인</title>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, #1E3E62, #0B1325 70%);
+        }
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-active);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <!-- Header Logo -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div class="logo-badge" style="width: 56px; height: 56px; margin: 0 auto 16px auto; font-size: 24px;">
+            <i class="fa-solid fa-train-subway"></i>
+        </div>
+        <h2 style="font-size: 22px; font-weight: 800; color: white;">KRRI 보직자 시스템 로그인</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">한국철도기술연구원 직원 KPI 및 성과 관리</p>
+    </div>
+
+    <!-- Error Alert -->
+    {% if error %}
+    <div style="background: rgba(255, 77, 77, 0.15); border: 1px solid rgba(255, 77, 77, 0.4); color: #FF4D4D; padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; text-align: center;">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Login Form -->
+    <form action="/login" method="POST">
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label style="font-size: 13px; color: var(--text-main); margin-bottom: 8px;">보직자 아이디</label>
+            <div style="position: relative;">
+                <input type="text" id="usernameInput" name="username" class="form-control" placeholder="아이디 입력" required style="padding-left: 40px;">
+                <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label style="font-size: 13px; color: var(--text-main); margin-bottom: 8px;">비밀번호</label>
+            <div style="position: relative;">
+                <input type="password" id="passwordInput" name="password" class="form-control" placeholder="비밀번호 입력" required style="padding-left: 40px;">
+                <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 15px; margin-bottom: 20px;">
+            <i class="fa-solid fa-right-to-bracket"></i> 로그인하기
+        </button>
+    </form>
+
+    <!-- Credential Info Helper -->
+    <div style="background: rgba(0, 132, 255, 0.1); border: 1px solid rgba(0, 132, 255, 0.3); border-radius: 12px; padding: 14px; text-align: center;">
+        <div style="font-size: 12px; color: var(--primary); font-weight: 700; margin-bottom: 6px;">
+            <i class="fa-solid fa-key"></i> 보직자 전용 로그인 정보
+        </div>
+        <div style="font-size: 13px; color: white; font-weight: 600; font-family: monospace;">
+            ID: <span style="color:var(--accent-cyan);">KRRI_LEADER</span> / PW: <span style="color:var(--accent-teal);">KRRI_LEADER</span>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" style="margin-top: 10px; width: 100%; justify-content: center; font-size: 11px;" onclick="autoFillCredentials()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 클릭 시 자동 입력
+        </button>
+    </div>
+</div>
+
+<script>
+    function autoFillCredentials() {
+        document.getElementById('usernameInput').value = 'KRRI_LEADER';
+        document.getElementById('passwordInput').value = 'KRRI_LEADER';
+    }
+</script>
+
+</body>
+</html>

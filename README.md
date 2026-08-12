@@ -8,6 +8,10 @@
 
 🌐 **실시보드 라이브 URL**: [https://krri-kpi-dashboard-three.vercel.app](https://krri-kpi-dashboard-three.vercel.app)
 
+🔑 **보직자 관리자 로그인 계정**:
+- **아이디 (ID)**: `KRRI_LEADER`
+- **비밀번호 (PW)**: `KRRI_LEADER`
+
 ---
 
 ## 🌟 주요 기능 (Key Features)

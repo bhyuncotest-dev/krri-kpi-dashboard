@@ -1,11 +1,53 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import database
 import sqlite3
+import os
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'krri_leader_kpi_dashboard_secret_key_2026')
 
 # 데이터베이스 초기화 및 핵심팀 보장
 database.init_db()
+
+# ==================== AUTHENTICATION MIDDLEWARE ====================
+
+@app.before_request
+def check_authentication():
+    # 로그인 허용 엔드포인트 및 정적 파일 제외
+    public_endpoints = ['login', 'static']
+    if request.endpoint in public_endpoints:
+        return None
+
+    # 보직자 로그인 세션 확인
+    if not session.get('user'):
+        return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        # 사용자 지정 관리자 로그인 인증 (KRRI_LEADER / KRRI_LEADER)
+        if username == 'KRRI_LEADER' and password == 'KRRI_LEADER':
+            session['user'] = 'KRRI_LEADER'
+            session['name'] = '김철수 (본부장)'
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error='아이디 또는 비밀번호가 올바르지 않습니다. (ID: KRRI_LEADER / PW: KRRI_LEADER)')
+
+    # 이미 로그인된 상태이면 메인 대시보드로 이동
+    if session.get('user'):
+        return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# ==================== VIEWS ====================
 
 @app.route('/')
 def index():
@@ -38,7 +80,7 @@ def get_dashboard_summary():
     cursor.execute("SELECT COUNT(*) FROM departments")
     total_departments = cursor.fetchone()[0]
 
-    # 3. 누적 실적 집계 (논문건수, 특허건수, 기술이전금액, R&D수주액)
+    # 3. 누적 실적 집계
     cursor.execute("""
         SELECT category_id, SUM(target_val) as total_target, SUM(actual_val) as total_actual
         FROM kpi_records
@@ -97,7 +139,7 @@ def get_dashboard_summary():
             'overall_score': round(row['overall_score'], 1)
         })
 
-    # 7. 관심 필요 직원 (지연/미달성 경고 등)
+    # 7. 관심 필요 직원
     cursor.execute("""
         SELECT DISTINCT e.id, e.name, e.position, d.name as dept_name, r.status, r.feedback,
                AVG(r.manager_score) as overall_score
@@ -120,7 +162,7 @@ def get_dashboard_summary():
             'overall_score': round(row['overall_score'], 1)
         })
 
-    # 8. 핵심 팀 (김일현 외 4인) 휴가 및 실적 종합 현황
+    # 8. 핵심 팀 (김일현 외 4인) 현황
     cursor.execute("""
         SELECT e.id, e.name, e.position, e.title, e.total_vacation, e.used_vacation,
                (e.total_vacation - e.used_vacation) as remaining_vacation,
@@ -319,7 +361,7 @@ def update_vacation():
     conn.commit()
     conn.close()
 
-    return jsonify({'success': True, 'message': '휴가일수가 성과 시스템에 수정 반영되었습니다.'})
+    return jsonify({'success': True, 'message': '휴가일수가 성공적으로 변경되었습니다.'})
 
 @app.route('/api/projects')
 def get_projects():

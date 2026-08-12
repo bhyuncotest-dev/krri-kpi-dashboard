@@ -46,12 +46,17 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="user-profile">
-                <div class="user-avatar">보직</div>
-                <div class="user-info">
-                    <span class="user-name">김철수 (본부장)</span>
-                    <span class="user-role">철도연구본부 보직자</span>
+            <div class="user-profile" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="user-avatar">보직</div>
+                    <div class="user-info">
+                        <span class="user-name">KRRI_LEADER</span>
+                        <span class="user-role">김철수 (본부장)</span>
+                    </div>
                 </div>
+                <a href="/logout" class="btn btn-secondary btn-sm" title="로그아웃" style="padding:6px 10px; font-size:11px; background:rgba(255,77,77,0.15); color:#FF4D4D; border:1px solid rgba(255,77,77,0.3);">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
             </div>
         </div>
     </aside>
@@ -67,12 +72,12 @@
             
             <div class="navbar-actions">
                 <div class="quick-tag">
-                    <i class="fa-solid fa-building-columns"></i>
-                    <span>KRRI 연구성과관리시스템 v2.6</span>
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>보직자 계정 접속 중 (KRRI_LEADER)</span>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="location.reload()">
-                    <i class="fa-solid fa-rotate-right"></i> 새로고침
-                </button>
+                <a href="/logout" class="btn btn-secondary btn-sm" style="color:#FF4D4D; border-color:rgba(255,77,77,0.3);">
+                    <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+                </a>
             </div>
         </header>
 
