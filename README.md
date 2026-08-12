@@ -1,11 +1,12 @@
 # 🚆 KRRI (한국철도기술연구원) 보직자용 직원 KPI 관리 대시보드
 
 ![KRRI KPI Dashboard](https://img.shields.io/badge/KRRI-KPI%20Dashboard-0084FF?style=for-the-badge&logo=flask)
-![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)
-![Framework](https://img.shields.io/badge/Framework-Flask-green?style=for-the-badge&logo=flask)
-![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)
+![Vercel Live](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel)
+![Python Version](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
 
 한국철도기술연구원(KRRI) 보직자(부서장, 연구본부장, 연구실장 등)가 소속 연구원 및 직원의 정량적/정성적 성과 지표(KPI)를 실시간으로 모니터링하고 평가, 코칭할 수 있는 **Flask 기반 대시보드 웹 애플리케이션**입니다.
+
+🌐 **실시보드 라이브 URL**: [https://krri-kpi-dashboard-three.vercel.app](https://krri-kpi-dashboard-three.vercel.app)
 
 ---
 
