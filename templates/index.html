@@ -2,11 +2,22 @@
 
 {% block title %}KRRI 보직자 메인 대시보드{% endblock %}
 {% block page_title %}보직자 종합 KPI 대시보드{% endblock %}
-{% block page_subtitle %}한국철도기술연구원 본부별 성과 및 주요 KPI 모니터링{% endblock %}
+{% block page_subtitle %}한국철도기술연구원 본부별 성과 및 직속 팀(김일현 외 4인) KPI/휴가 모니터링{% endblock %}
 
 {% block content %}
 <!-- Metrics Summary Row -->
 <div class="metrics-grid">
+    <div class="metric-card" style="border-left: 4px solid var(--accent-teal);">
+        <div class="metric-info">
+            <div class="label">⭐ 직속 팀 (김일현 외 4인) 평균 평점</div>
+            <div class="val" id="myTeamAvgScore">95.0 <span style="font-size:16px; font-weight:normal;">점</span></div>
+            <div class="sub-val"><i class="fa-solid fa-crown" style="color:var(--accent-orange);"></i> 연구본부 최우수 팀</div>
+        </div>
+        <div class="metric-icon icon-green">
+            <i class="fa-solid fa-users-gear"></i>
+        </div>
+    </div>
+
     <div class="metric-card">
         <div class="metric-info">
             <div class="label">전체 평균 보직자 평가 점수</div>
@@ -20,35 +31,58 @@
 
     <div class="metric-card">
         <div class="metric-info">
-            <div class="label">SCI / KCI 논문 게재</div>
-            <div class="val" id="metricPapers">42 / 41 <span style="font-size:14px; font-weight:normal;">건</span></div>
-            <div class="sub-val"><i class="fa-solid fa-circle-check"></i> 목표 달성률 102.4%</div>
-        </div>
-        <div class="metric-icon icon-green">
-            <i class="fa-solid fa-book-bookmark"></i>
-        </div>
-    </div>
-
-    <div class="metric-card">
-        <div class="metric-info">
-            <div class="label">특허 출원 및 등록</div>
-            <div class="val" id="metricPatents">37 / 33 <span style="font-size:14px; font-weight:normal;">건</span></div>
-            <div class="sub-val"><i class="fa-solid fa-circle-check"></i> 목표 달성률 112.1%</div>
+            <div class="label">직속 팀 총 연차 사용률</div>
+            <div class="val" id="myTeamVacationVal">28.5 / 78 <span style="font-size:14px; font-weight:normal;">일</span></div>
+            <div class="sub-val" id="myTeamVacationSub"><i class="fa-solid fa-umbrella-beach"></i> 평균 잔여연차 9.9일</div>
         </div>
         <div class="metric-icon icon-orange">
-            <i class="fa-solid fa-lightbulb"></i>
+            <i class="fa-solid fa-calendar-check"></i>
         </div>
     </div>
 
     <div class="metric-card">
         <div class="metric-info">
-            <div class="label">기술이전 계약 실적</div>
+            <div class="label">기술이전 및 R&D 수주액</div>
             <div class="val" id="metricTechTransfer">1,410 <span style="font-size:14px; font-weight:normal;">백만원</span></div>
             <div class="sub-val"><i class="fa-solid fa-circle-check"></i> 목표 달성률 114.6%</div>
         </div>
         <div class="metric-icon icon-purple">
             <i class="fa-solid fa-handshake"></i>
         </div>
+    </div>
+</div>
+
+<!-- Special Highlight Section: My Dedicated Team (김일현, 김이현, 김삼현, 김사현, 김오현) -->
+<div class="card-box" style="margin-bottom: 32px; border: 1px solid var(--border-active); background: linear-gradient(135deg, rgba(0, 132, 255, 0.08), rgba(0, 210, 106, 0.04));">
+    <div class="card-box-header">
+        <h2>
+            <i class="fa-solid fa-star" style="color:var(--accent-orange);"></i> 
+            보직자 직속 핵심 팀원 KPI 및 연차(휴가) 집중 관리 
+            <span style="font-size:12px; font-weight:normal; color:var(--text-muted); margin-left:8px;">(김일현·김이현·김삼현·김사현·김오현)</span>
+        </h2>
+        <a href="/employees?my_team=1" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-sliders"></i> 직속팀 전용 관리
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>팀원 성명</th>
+                    <th>직급 / 담당 직책</th>
+                    <th>KPI 평점</th>
+                    <th>총 부여 연차</th>
+                    <th>사용 연차</th>
+                    <th>잔여 연차</th>
+                    <th>연차 사용률</th>
+                    <th>관리/평가</th>
+                </tr>
+            </thead>
+            <tbody id="myTeamTableBody">
+                <!-- Loaded dynamically via JS -->
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -124,6 +158,7 @@
                 </tbody>
             </table>
         </div>
+    </div>
 </div>
 {% endblock %}
 

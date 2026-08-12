@@ -4,7 +4,7 @@ import sqlite3
 
 app = Flask(__name__)
 
-# 데이터베이스 초기화
+# 데이터베이스 초기화 및 핵심팀 보장
 database.init_db()
 
 @app.route('/')
@@ -39,7 +39,6 @@ def get_dashboard_summary():
     total_departments = cursor.fetchone()[0]
 
     # 3. 누적 실적 집계 (논문건수, 특허건수, 기술이전금액, R&D수주액)
-    # category 1: 논문, 2: 특허, 3: 기술이전(백만원), 4: R&D수주(백만원), 5: 현장실증
     cursor.execute("""
         SELECT category_id, SUM(target_val) as total_target, SUM(actual_val) as total_actual
         FROM kpi_records
@@ -77,7 +76,7 @@ def get_dashboard_summary():
 
     # 6. 우수 성과 연구원 Top 5
     cursor.execute("""
-        SELECT e.id, e.name, e.position, d.name as dept_name, e.avatar_color,
+        SELECT e.id, e.name, e.position, d.name as dept_name, e.avatar_color, e.is_my_team,
                AVG(r.manager_score) as overall_score
         FROM employees e
         JOIN departments d ON e.department_id = d.id
@@ -94,6 +93,7 @@ def get_dashboard_summary():
             'position': row['position'],
             'dept_name': row['dept_name'],
             'avatar_color': row['avatar_color'],
+            'is_my_team': row['is_my_team'],
             'overall_score': round(row['overall_score'], 1)
         })
 
@@ -120,6 +120,28 @@ def get_dashboard_summary():
             'overall_score': round(row['overall_score'], 1)
         })
 
+    # 8. 핵심 팀 (김일현 외 4인) 휴가 및 실적 종합 현황
+    cursor.execute("""
+        SELECT e.id, e.name, e.position, e.title, e.total_vacation, e.used_vacation,
+               (e.total_vacation - e.used_vacation) as remaining_vacation,
+               AVG(r.manager_score) as avg_score
+        FROM employees e
+        LEFT JOIN kpi_records r ON e.id = r.employee_id
+        WHERE e.is_my_team = 1 OR e.name IN ('김일현', '김이현', '김삼현', '김사현', '김오현')
+        GROUP BY e.id
+        ORDER BY e.id ASC
+    """)
+    my_team_summary = []
+    total_used_v = 0
+    total_total_v = 0
+    for row in cursor.fetchall():
+        item = dict(row)
+        item['avg_score'] = round(item['avg_score'] or 0.0, 1)
+        item['remaining_vacation'] = round(item['remaining_vacation'], 1)
+        total_used_v += item['used_vacation']
+        total_total_v += item['total_vacation']
+        my_team_summary.append(item)
+
     conn.close()
 
     return jsonify({
@@ -129,12 +151,19 @@ def get_dashboard_summary():
         'cat_summary': cat_summary,
         'dept_performance': dept_performance,
         'top_performers': top_performers,
-        'warning_employees': warning_employees
+        'warning_employees': warning_employees,
+        'my_team_summary': my_team_summary,
+        'my_team_v_stats': {
+            'total_used': round(total_used_v, 1),
+            'total_total': round(total_total_v, 1),
+            'total_remaining': round(total_total_v - total_used_v, 1)
+        }
     })
 
 @app.route('/api/employees')
 def get_employees():
     dept_id = request.args.get('dept_id', type=int)
+    only_my_team = request.args.get('my_team', type=int)
     search_q = request.args.get('q', type=str, default='').strip()
     
     conn = database.get_db_connection()
@@ -142,6 +171,8 @@ def get_employees():
     
     query = """
         SELECT e.id, e.name, e.emp_no, e.position, e.title, e.email, e.phone, e.avatar_color,
+               e.total_vacation, e.used_vacation, (e.total_vacation - e.used_vacation) as remaining_vacation,
+               e.is_my_team,
                d.id as dept_id, d.name as dept_name,
                AVG(r.manager_score) as avg_score,
                AVG(r.self_score) as avg_self_score,
@@ -153,6 +184,9 @@ def get_employees():
     """
     params = []
 
+    if only_my_team:
+        query += " AND (e.is_my_team = 1 OR e.name IN ('김일현', '김이현', '김삼현', '김사현', '김오현'))"
+
     if dept_id:
         query += " AND e.department_id = ?"
         params.append(dept_id)
@@ -162,7 +196,7 @@ def get_employees():
         pattern = f"%{search_q}%"
         params.extend([pattern, pattern, pattern, pattern])
 
-    query += " GROUP BY e.id ORDER BY avg_score DESC"
+    query += " GROUP BY e.id ORDER BY e.is_my_team DESC, avg_score DESC"
 
     cursor.execute(query, params)
     employees_list = []
@@ -176,6 +210,10 @@ def get_employees():
             'email': row['email'],
             'phone': row['phone'],
             'avatar_color': row['avatar_color'],
+            'total_vacation': row['total_vacation'] or 15,
+            'used_vacation': round(row['used_vacation'] or 0.0, 1),
+            'remaining_vacation': round(row['remaining_vacation'] or 15.0, 1),
+            'is_my_team': row['is_my_team'] or (1 if row['name'] in ['김일현', '김이현', '김삼현', '김사현', '김오현'] else 0),
             'dept_id': row['dept_id'],
             'dept_name': row['dept_name'],
             'avg_score': round(row['avg_score'] or 0.0, 1),
@@ -198,7 +236,8 @@ def get_employee_detail(emp_id):
     cursor = conn.cursor()
     
     cursor.execute("""
-        SELECT e.*, d.name as dept_name, d.code as dept_code
+        SELECT e.*, (e.total_vacation - e.used_vacation) as remaining_vacation,
+               d.name as dept_name, d.code as dept_code
         FROM employees e
         LEFT JOIN departments d ON e.department_id = d.id
         WHERE e.id = ?
@@ -209,6 +248,7 @@ def get_employee_detail(emp_id):
         return jsonify({'error': '직원을 찾을 수 없습니다.'}), 404
 
     employee = dict(emp_row)
+    employee['remaining_vacation'] = round(employee['remaining_vacation'] or 0.0, 1)
 
     cursor.execute("""
         SELECT r.*, c.name as category_name, c.unit, c.weight
@@ -257,6 +297,30 @@ def update_kpi_record():
     
     return jsonify({'success': True, 'message': 'KPI 실적 및 보직자 평가가 성공적으로 업데이트되었습니다.'})
 
+@app.route('/api/vacation/update', methods=['POST'])
+def update_vacation():
+    data = request.get_json()
+    emp_id = data.get('emp_id')
+    total_vacation = data.get('total_vacation')
+    used_vacation = data.get('used_vacation')
+
+    if not emp_id:
+        return jsonify({'error': 'emp_id가 필요합니다.'}), 400
+
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE employees
+        SET total_vacation = ?, used_vacation = ?
+        WHERE id = ?
+    """, (total_vacation, used_vacation, emp_id))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({'success': True, 'message': '휴가일수가 성과 시스템에 수정 반영되었습니다.'})
+
 @app.route('/api/projects')
 def get_projects():
     conn = database.get_db_connection()
@@ -284,6 +348,7 @@ def add_employee():
     title = data.get('title', '연구원')
     email = data.get('email', f"{emp_no.lower()}@krri.re.kr")
     phone = data.get('phone', '031-460-5000')
+    total_vacation = data.get('total_vacation', 15)
 
     if not name or not emp_no or not dept_id:
         return jsonify({'error': '이름, 사번, 부서는 필수 입력 항목입니다.'}), 400
@@ -293,9 +358,9 @@ def add_employee():
 
     try:
         cursor.execute("""
-            INSERT INTO employees (name, emp_no, department_id, position, title, email, phone, avatar_color)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (name, emp_no, dept_id, position, title, email, phone, '#0084FF'))
+            INSERT INTO employees (name, emp_no, department_id, position, title, email, phone, avatar_color, total_vacation, used_vacation, is_my_team)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.0, 1)
+        """, (name, emp_no, dept_id, position, title, email, phone, '#0084FF', total_vacation))
         emp_id = cursor.lastrowid
 
         # 기본 KPI 항목 5개 자동 추가

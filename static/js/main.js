@@ -2,7 +2,7 @@
 
 let currentEmployees = [];
 let currentDepartments = [];
-let activeDeptFilter = null;
+let activeDeptFilter = 'my_team';
 let deptChartInstance = null;
 let categoryChartInstance = null;
 
@@ -16,29 +16,76 @@ function loadDashboardData() {
             document.getElementById('metricAvgScore').innerHTML = `${data.avg_manager_score} <span style="font-size:16px; font-weight:normal;">점</span>`;
             
             if (data.cat_summary) {
-                // Papers
                 if (data.cat_summary[1]) {
                     document.getElementById('metricPapers').innerHTML = `${data.cat_summary[1].total_actual} / ${data.cat_summary[1].total_target} <span style="font-size:14px; font-weight:normal;">건</span>`;
                 }
-                // Patents
                 if (data.cat_summary[2]) {
                     document.getElementById('metricPatents').innerHTML = `${data.cat_summary[2].total_actual} / ${data.cat_summary[2].total_target} <span style="font-size:14px; font-weight:normal;">건</span>`;
                 }
-                // Tech Transfer
                 if (data.cat_summary[3]) {
                     document.getElementById('metricTechTransfer').innerHTML = `${data.cat_summary[3].total_actual.toLocaleString()} <span style="font-size:14px; font-weight:normal;">백만원</span>`;
+                }
+            }
+
+            // My Team Summary Card
+            if (data.my_team_summary && data.my_team_summary.length > 0) {
+                const teamTable = document.getElementById('myTeamTableBody');
+                if (teamTable) {
+                    const avgScore = (data.my_team_summary.reduce((acc, m) => acc + m.avg_score, 0) / data.my_team_summary.length).toFixed(1);
+                    document.getElementById('myTeamAvgScore').innerHTML = `${avgScore} <span style="font-size:16px; font-weight:normal;">점</span>`;
+                    
+                    document.getElementById('myTeamVacationVal').innerHTML = `${data.my_team_v_stats.total_used} / ${data.my_team_v_stats.total_total} <span style="font-size:14px; font-weight:normal;">일</span>`;
+                    document.getElementById('myTeamVacationSub').innerHTML = `<i class="fa-solid fa-umbrella-beach"></i> 팀 평균 잔여연차 ${ (data.my_team_v_stats.total_remaining / data.my_team_summary.length).toFixed(1) }일`;
+
+                    teamTable.innerHTML = data.my_team_summary.map(m => {
+                        const pct = Math.round((m.used_vacation / m.total_vacation) * 100);
+                        let vBadge = 'badge-success';
+                        if (pct > 70) vBadge = 'badge-warning';
+                        if (pct > 90) vBadge = 'badge-danger';
+
+                        return `
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span class="badge badge-info" style="font-size:10px;">⭐ 직속팀</span>
+                                        <strong style="color:white; font-size:14px;">${m.name}</strong>
+                                    </div>
+                                </td>
+                                <td>${m.position} / <span style="color:var(--text-muted);">${m.title}</span></td>
+                                <td><strong style="color:var(--accent-teal); font-size:15px;">${m.avg_score}점</strong></td>
+                                <td>${m.total_vacation}일</td>
+                                <td><strong style="color:var(--accent-orange);">${m.used_vacation}일</strong></td>
+                                <td><strong style="color:var(--accent-cyan);">${m.remaining_vacation}일</strong></td>
+                                <td style="width:140px;">
+                                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                                        <span>${pct}%</span>
+                                        <span class="badge ${vBadge}" style="font-size:9px;">${m.remaining_vacation}일 남음</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" style="width:${pct}%;"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="openKpiModal(${m.id})">
+                                        <i class="fa-solid fa-pen-to-square"></i> 관리 & 휴가수정
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
             }
 
             // Top Performers Table
             const topBody = document.getElementById('topPerformersBody');
             if (topBody) {
-                topBody.innerHTML = data.top_performers.map((emp, index) => `
+                topBody.innerHTML = data.top_performers.map((emp) => `
                     <tr>
                         <td>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div class="user-avatar" style="background:${emp.avatar_color}; width:32px; height:32px; font-size:12px;">${emp.name[0]}</div>
                                 <strong>${emp.name}</strong>
+                                ${emp.is_my_team ? '<span class="badge badge-info" style="font-size:9px;">직속팀</span>' : ''}
                             </div>
                         </td>
                         <td>${emp.dept_name}</td>
@@ -179,7 +226,13 @@ function loadEmployeesData() {
             currentDepartments = data.departments;
 
             renderDeptFilters(data.departments);
-            renderEmployeeGrid(currentEmployees);
+            
+            if (activeDeptFilter === 'my_team') {
+                const myTeam = currentEmployees.filter(e => e.is_my_team || ['김일현', '김이현', '김삼현', '김사현', '김오현'].includes(e.name));
+                renderEmployeeGrid(myTeam);
+            } else {
+                renderEmployeeGrid(currentEmployees);
+            }
         })
         .catch(err => console.error('Employees load error:', err));
 }
@@ -188,7 +241,12 @@ function renderDeptFilters(departments) {
     const filterGroup = document.getElementById('deptFilterGroup');
     if (!filterGroup) return;
 
-    let html = `<button class="btn ${activeDeptFilter === null ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="filterByDept(null, this)">전체 본부/실</button>`;
+    let html = `
+        <button class="btn ${activeDeptFilter === 'my_team' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="filterByDept('my_team', this)">
+            <i class="fa-solid fa-star" style="color:var(--accent-orange);"></i> ⭐ 우리 팀 (김일현 외 4인)
+        </button>
+        <button class="btn ${activeDeptFilter === null ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="filterByDept(null, this)">전체 부서</button>
+    `;
     departments.forEach(dept => {
         const isSelected = activeDeptFilter === dept.id;
         html += `<button class="btn ${isSelected ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="filterByDept(${dept.id}, this)">${dept.name}</button>`;
@@ -201,7 +259,9 @@ function filterByDept(deptId, btnElem) {
     renderDeptFilters(currentDepartments);
 
     let filtered = currentEmployees;
-    if (deptId !== null) {
+    if (deptId === 'my_team') {
+        filtered = currentEmployees.filter(e => e.is_my_team || ['김일현', '김이현', '김삼현', '김사현', '김오현'].includes(e.name));
+    } else if (deptId !== null) {
         filtered = currentEmployees.filter(e => e.dept_id === deptId);
     }
     renderEmployeeGrid(filtered);
@@ -211,7 +271,9 @@ function handleEmployeeSearch() {
     const query = document.getElementById('employeeSearchInput').value.toLowerCase().trim();
     let filtered = currentEmployees;
 
-    if (activeDeptFilter !== null) {
+    if (activeDeptFilter === 'my_team') {
+        filtered = filtered.filter(e => e.is_my_team || ['김일현', '김이현', '김삼현', '김사현', '김오현'].includes(e.name));
+    } else if (activeDeptFilter !== null) {
         filtered = filtered.filter(e => e.dept_id === activeDeptFilter);
     }
 
@@ -242,35 +304,50 @@ function renderEmployeeGrid(employees) {
         else if (emp.avg_score < 75) badgeClass = 'badge-danger';
         else if (emp.avg_score < 85) badgeClass = 'badge-warning';
 
+        const vacPct = Math.min(Math.round((emp.used_vacation / emp.total_vacation) * 100), 100);
+
         return `
-            <div class="emp-card">
+            <div class="emp-card" style="${emp.is_my_team ? 'border:1px solid var(--border-active); background: linear-gradient(180deg, var(--bg-card), rgba(0, 132, 255, 0.05));' : ''}">
                 <div>
                     <div class="emp-header">
                         <div class="emp-avatar" style="background:${emp.avatar_color || '#0084FF'}">${emp.name[0]}</div>
                         <div class="emp-meta">
-                            <h3>${emp.name} <span style="font-size:12px; color:var(--accent-teal); font-weight:normal;">(${emp.emp_no})</span></h3>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <h3>${emp.name}</h3>
+                                ${emp.is_my_team ? '<span class="badge badge-info" style="font-size:10px;">⭐ 직속팀</span>' : ''}
+                            </div>
                             <p>${emp.dept_name} | ${emp.position}</p>
                         </div>
                     </div>
 
                     <div class="emp-stats">
                         <div class="emp-stat-item">
-                            <div class="lbl">자기평가</div>
-                            <div class="val" style="color:var(--text-muted);">${emp.avg_self_score}점</div>
-                        </div>
-                        <div class="emp-stat-item">
-                            <div class="lbl">보직자평가</div>
+                            <div class="lbl">KPI 평점</div>
                             <div class="val">${emp.avg_score}점</div>
                         </div>
                         <div class="emp-stat-item">
-                            <div class="lbl">등록 KPI</div>
-                            <div class="val" style="color:white;">${emp.kpi_count}개</div>
+                            <div class="lbl">사용 연차</div>
+                            <div class="val" style="color:var(--accent-orange);">${emp.used_vacation}일</div>
+                        </div>
+                        <div class="emp-stat-item">
+                            <div class="lbl">잔여 연차</div>
+                            <div class="val" style="color:var(--accent-teal);">${emp.remaining_vacation}일</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                            <span style="color:var(--text-muted);"><i class="fa-solid fa-umbrella-beach"></i> 휴가(연차) 소진율</span>
+                            <span style="color:white; font-weight:700;">${emp.used_vacation} / ${emp.total_vacation}일 (${vacPct}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${vacPct}%; background: linear-gradient(90deg, #FF9F43, #00D26A);"></div>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 16px;">
                         <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                            <span style="color:var(--text-muted);">달성 종합 등급</span>
+                            <span style="color:var(--text-muted);">KPI 성과 등급</span>
                             <span class="badge ${badgeClass}">${emp.avg_score >= 90 ? '우수 달성' : (emp.avg_score >= 80 ? '보통 달성' : '지연/개선필요')}</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -280,7 +357,7 @@ function renderEmployeeGrid(employees) {
                 </div>
 
                 <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center;" onclick="openKpiModal(${emp.id})">
-                    <i class="fa-solid fa-pen-to-square"></i> KPI 상세 및 평가 작성
+                    <i class="fa-solid fa-pen-to-square"></i> KPI 및 연차(휴가) 상세 수정
                 </button>
             </div>
         `;
@@ -306,7 +383,7 @@ function openKpiModal(empId) {
             }
 
             const emp = data.employee;
-            modalTitle.innerText = `${emp.name} ${emp.position} - KPI 상세 및 보직자 평가`;
+            modalTitle.innerText = `${emp.name} ${emp.position} - KPI 성과 및 연차(휴가) 관리`;
 
             let kpiRowsHtml = data.kpis.map(kpi => `
                 <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border-color); border-radius:12px; padding:16px; margin-bottom:16px;">
@@ -364,11 +441,42 @@ function openKpiModal(empId) {
             modalBody.innerHTML = `
                 <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
                     <div class="user-avatar" style="background:${emp.avatar_color}; width:50px; height:50px; font-size:20px;">${emp.name[0]}</div>
-                    <div>
-                        <h3 style="color:white; font-size:18px;">${emp.name} <span style="font-size:14px; color:var(--text-muted);">(${emp.title})</span></h3>
-                        <p style="font-size:13px; color:var(--text-muted);">${emp.dept_name} | 사번: ${emp.emp_no} | 연락처: ${emp.phone}</p>
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <h3 style="color:white; font-size:18px;">${emp.name}</h3>
+                            <span style="font-size:14px; color:var(--text-muted);">(${emp.title})</span>
+                            ${emp.is_my_team ? '<span class="badge badge-info">⭐ 직속 팀원</span>' : ''}
+                        </div>
+                        <p style="font-size:13px; color:var(--text-muted);">${emp.dept_name} | 사번: ${emp.emp_no} | 이메일: ${emp.email}</p>
                     </div>
                 </div>
+
+                <!-- Vacation Management Section -->
+                <div style="background:linear-gradient(135deg, rgba(255, 159, 67, 0.12), rgba(0, 210, 106, 0.08)); border:1px solid var(--border-active); border-radius:12px; padding:16px; margin-bottom:24px;">
+                    <h4 style="font-size:14px; color:var(--accent-orange); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-umbrella-beach"></i> 휴가(연차) 사용 및 근태 관리
+                    </h4>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; align-items:center;">
+                        <div>
+                            <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">총 부여 연차(일)</label>
+                            <input type="number" id="vac_total_${emp.id}" class="form-control" value="${emp.total_vacation}" step="0.5" min="1" max="40">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">사용한 연차(일)</label>
+                            <input type="number" id="vac_used_${emp.id}" class="form-control" value="${emp.used_vacation}" step="0.5" min="0" max="40">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; color:var(--accent-teal); display:block; margin-bottom:4px; font-weight:700;">현재 잔여 연차</label>
+                            <div style="font-size:16px; font-weight:800; color:var(--accent-teal); padding-top:6px;">${emp.remaining_vacation} 일</div>
+                        </div>
+                        <div style="text-align:right; padding-top:16px;">
+                            <button class="btn btn-primary btn-sm" onclick="saveVacationRecord(${emp.id})">
+                                <i class="fa-solid fa-check"></i> 연차 정보 수정
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <h4 style="font-size:14px; color:var(--primary); margin-bottom:12px;"><i class="fa-solid fa-list-check"></i> 정량/정성 KPI 5대 항목 평가표</h4>
                     ${kpiRowsHtml}
@@ -405,7 +513,33 @@ function saveKpiRecord(recordId) {
     .then(data => {
         if (data.success) {
             alert('보직자 평가 및 실적이 성공적으로 업데이트되었습니다.');
-            // Reload list if on employees page
+            if (typeof loadEmployeesData === 'function') loadEmployeesData();
+            if (typeof loadDashboardData === 'function') loadDashboardData();
+        } else {
+            alert('수정 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    })
+    .catch(err => alert('오류 발생: ' + err));
+}
+
+function saveVacationRecord(empId) {
+    const total_vacation = parseFloat(document.getElementById(`vac_total_${empId}`).value) || 15;
+    const used_vacation = parseFloat(document.getElementById(`vac_used_${empId}`).value) || 0;
+
+    fetch('/api/vacation/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            emp_id: empId,
+            total_vacation: total_vacation,
+            used_vacation: used_vacation
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('직원의 연차/휴가 정보가 정상 수정되었습니다.');
+            openKpiModal(empId);
             if (typeof loadEmployeesData === 'function') loadEmployeesData();
             if (typeof loadDashboardData === 'function') loadDashboardData();
         } else {
@@ -426,7 +560,6 @@ function openAddEmployeeModal() {
     const template = document.getElementById('addEmployeeTemplate');
     modalBody.innerHTML = template.innerHTML;
 
-    // Populate dept select
     const select = document.getElementById('addDeptSelect');
     if (select && currentDepartments) {
         select.innerHTML = currentDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');

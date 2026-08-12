@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}KRRI 직원 KPI 상세 관리{% endblock %}
-{% block page_title %}직원별 KPI 상세 관리 및 보직자 평가{% endblock %}
-{% block page_subtitle %}연구원별 정량/정성 목표 달성도 모니터링 및 보직자 평가 점수/피드백 작성{% endblock %}
+{% block title %}KRRI 직원 KPI 및 휴가 상세 관리{% endblock %}
+{% block page_title %}직원별 KPI 상세 관리 및 휴가(연차) 모니터링{% endblock %}
+{% block page_subtitle %}보직자 직속 핵심팀(김일현·김이현·김삼현·김사현·김오현) 및 전 연구원 성과/근태 통합 관리{% endblock %}
 
 {% block content %}
 <!-- Search & Filter Header -->
@@ -11,7 +11,10 @@
         
         <!-- Filter Tabs -->
         <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="deptFilterGroup">
-            <button class="btn btn-primary btn-sm" onclick="filterByDept(null, this)">전체 본부/실</button>
+            <button class="btn btn-primary btn-sm" onclick="filterByDept('my_team', this)">
+                <i class="fa-solid fa-star" style="color:var(--accent-orange);"></i> ⭐ 우리 팀 (김일현 외 4인)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="filterByDept(null, this)">전체 부서</button>
             <!-- Dynamically populated department buttons -->
         </div>
 
@@ -33,7 +36,7 @@
     <!-- Loaded dynamically via JS -->
 </div>
 
-<!-- Add Employee Modal HTML (Used inside modal script) -->
+<!-- Add Employee Modal HTML -->
 <template id="addEmployeeTemplate">
     <form id="addEmpForm" onsubmit="submitAddEmployee(event)">
         <div class="form-group">
@@ -50,7 +53,7 @@
                 <!-- Populated via JS -->
             </select>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
             <div class="form-group">
                 <label>직급</label>
                 <select name="position" class="form-control">
@@ -63,6 +66,10 @@
             <div class="form-group">
                 <label>직책</label>
                 <input type="text" name="title" class="form-control" value="선임연구원" placeholder="예: 연구팀장">
+            </div>
+            <div class="form-group">
+                <label>부여 연차(일)</label>
+                <input type="number" name="total_vacation" class="form-control" value="15" min="1" max="30">
             </div>
         </div>
         <div class="form-group">
